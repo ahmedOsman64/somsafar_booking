@@ -1,0 +1,25 @@
+# Dependency directories
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Android-specific
+android/**/generated/
+android/gen/
+android/gradle/
+.gradle/
+
+# iOS-specific
+ios/.symlinks/
+ios/Pods/
+ios/DerivedData/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# Local Pub Cache
+.pub_cache/

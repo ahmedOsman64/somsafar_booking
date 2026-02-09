@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "628179823385",
+    "project_id": "somsafar-project",
+    "storage_bucket": "somsafar-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:628179823385:android:1fedd63c18dacaaa3cf388",
+        "android_client_info": {
+          "package_name": "com.ZU.somsafar_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUfwjcAJ0UbPTafNxP30yY0nt1qDcafRE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:628179823385:android:0539ebdcef71e1c23cf388",
+        "android_client_info": {
+          "package_name": "com.example.somsafar_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUfwjcAJ0UbPTafNxP30yY0nt1qDcafRE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
