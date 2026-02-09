@@ -115,7 +115,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   AppTextField(
                     controller: _emailController,
                     label: 'Email / Username',
-                    hint: 'Enter your credentials',
+                    hint: 'Enter your email or username',
                     prefixIcon: const Icon(Icons.person_outline),
                     validator: (v) => v?.isEmpty == true ? 'Required' : null,
                   ),
