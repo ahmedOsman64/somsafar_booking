@@ -136,8 +136,3 @@ We love help from the community! If you want to contribute:
 
 ## ⚖️ License
 
-This project is licensed under the **MIT License**. You are free to use, modify, and distribute it.
-
----
-
-*Made with ❤️ for a better travel experience.*
