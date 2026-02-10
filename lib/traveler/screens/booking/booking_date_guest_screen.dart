@@ -62,7 +62,7 @@ class _BookingDateGuestScreenState
 
   @override
   Widget build(BuildContext context) {
-    final services = ref.watch(serviceProvider);
+    final services = ref.watch(filteredServicesProvider);
     final service = services.firstWhere(
       (s) => s.id == widget.serviceId,
       orElse: () => throw Exception('Service not found'),

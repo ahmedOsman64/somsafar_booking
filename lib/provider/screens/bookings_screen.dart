@@ -13,7 +13,7 @@ class ProviderBookingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bookings = ref.watch(bookingProvider);
+    final bookings = ref.watch(filteredBookingsProvider);
     final user = ref.watch(authProvider);
     final providerType = user?.providerType ?? ProviderType.hotel;
 

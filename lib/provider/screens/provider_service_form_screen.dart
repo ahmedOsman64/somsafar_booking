@@ -117,7 +117,7 @@ class _ProviderServiceFormScreenState
 
   void _loadServiceData() {
     Future.microtask(() {
-      final services = ref.read(serviceProvider);
+      final services = ref.read(filteredServicesProvider);
 
       try {
         final service = services.firstWhere((s) => s.id == widget.serviceId);
@@ -303,7 +303,7 @@ class _ProviderServiceFormScreenState
       if (widget.serviceId != null) {
         // Update existsing
         final existingService = ref
-            .read(serviceProvider)
+            .read(filteredServicesProvider)
             .firstWhere((s) => s.id == widget.serviceId!);
 
         final updatedService = existingService.copyWith(
@@ -325,8 +325,10 @@ class _ProviderServiceFormScreenState
         );
       } else {
         // Create new
+        final user = ref.read(authProvider);
         final newService = Service(
           id: '', // Repo generates ID
+          providerId: user?.providerId ?? 'unknown',
           title: title,
           category: category,
           price: price,

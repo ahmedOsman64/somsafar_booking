@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/service_model.dart';
+import '../models/user_model.dart';
 import '../mock_data/mock_data.dart';
+import 'auth_service.dart';
 import 'package:uuid/uuid.dart';
 
 class ServiceRepository extends StateNotifier<List<Service>> {
@@ -43,3 +45,26 @@ final serviceProvider = StateNotifierProvider<ServiceRepository, List<Service>>(
     return ServiceRepository();
   },
 );
+
+// Selector for role-based data isolation
+final filteredServicesProvider = Provider<List<Service>>((ref) {
+  final user = ref.watch(authProvider);
+  final services = ref.watch(serviceProvider);
+
+  if (user == null) {
+    // If not logged in (e.g. browsing as guest if allowed), see only active
+    return services.where((s) => s.status == ServiceStatus.active).toList();
+  }
+
+  switch (user.role) {
+    case UserRole.traveler:
+      // Travelers see all active services
+      return services.where((s) => s.status == ServiceStatus.active).toList();
+    case UserRole.provider:
+      // Providers only see THEIR SITUATION
+      return services.where((s) => s.providerId == user.providerId).toList();
+    case UserRole.admin:
+      // Admins see all for moderation
+      return services;
+  }
+});

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/services/auth_service.dart';
+import '../../shared/models/user_model.dart';
 
 class AdminShell extends ConsumerWidget {
   final Widget child;
@@ -11,7 +12,11 @@ class AdminShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authProvider);
+    final adminRole = user?.adminRole ?? AdminRole.supportAdmin;
     final isDesktop = MediaQuery.of(context).size.width > 800;
+
+    final navItems = _getNavItems(adminRole);
 
     if (isDesktop) {
       return Scaffold(
@@ -27,38 +32,15 @@ class AdminShell extends ConsumerWidget {
                 color: AppColors.accent,
                 fontWeight: FontWeight.bold,
               ),
-              destinations: const [
-                NavigationRailDestination(
-                  icon: Icon(Icons.analytics_outlined),
-                  selectedIcon: Icon(Icons.analytics),
-                  label: Text('Overview'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.people_outline),
-                  selectedIcon: Icon(Icons.people),
-                  label: Text('Users'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.verified_outlined),
-                  selectedIcon: Icon(Icons.verified),
-                  label: Text('Services'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.attach_money),
-                  selectedIcon: Icon(Icons.attach_money),
-                  label: Text('Financials'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.support_agent),
-                  selectedIcon: Icon(Icons.support_agent),
-                  label: Text('Support'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.settings_outlined),
-                  selectedIcon: Icon(Icons.settings),
-                  label: Text('Settings'),
-                ),
-              ],
+              destinations: navItems
+                  .map(
+                    (item) => NavigationRailDestination(
+                      icon: Icon(item.icon),
+                      selectedIcon: Icon(item.selectedIcon),
+                      label: Text(item.label),
+                    ),
+                  )
+                  .toList(),
               trailing: Padding(
                 padding: const EdgeInsets.only(bottom: 20),
                 child: IconButton(
@@ -67,11 +49,11 @@ class AdminShell extends ConsumerWidget {
                     ref.read(authProvider.notifier).logout();
                     context.go('/login');
                   },
-                  tooltip: 'Logout',
                 ),
               ),
-              selectedIndex: _calculateSelectedIndex(context),
-              onDestinationSelected: (index) => _onItemTapped(index, context),
+              selectedIndex: _calculateSelectedIndex(context, navItems),
+              onDestinationSelected: (index) =>
+                  _onItemTapped(index, context, navItems),
             ),
             Expanded(child: child),
           ],
@@ -131,32 +113,23 @@ class AdminShell extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  _buildDrawerItem(
-                    context,
-                    0,
-                    'Overview',
-                    Icons.analytics_outlined,
-                  ),
-                  _buildDrawerItem(context, 1, 'Users', Icons.people_outline),
-                  _buildDrawerItem(
-                    context,
-                    2,
-                    'Services',
-                    Icons.verified_outlined,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    3,
-                    'Financials',
-                    Icons.attach_money,
-                  ),
-                  _buildDrawerItem(context, 4, 'Support', Icons.support_agent),
-                  _buildDrawerItem(
-                    context,
-                    5,
-                    'Settings',
-                    Icons.settings_outlined,
-                  ),
+                  ...navItems.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final item = entry.value;
+                    return ListTile(
+                      leading: Icon(item.icon, color: Colors.white70),
+                      title: Text(
+                        item.label,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      selected:
+                          _calculateSelectedIndex(context, navItems) == index,
+                      onTap: () {
+                        _onItemTapped(index, context, navItems);
+                        Navigator.pop(context);
+                      },
+                    );
+                  }),
                 ],
               ),
             ),
@@ -180,54 +153,93 @@ class AdminShell extends ConsumerWidget {
     );
   }
 
-  Widget _buildDrawerItem(
-    BuildContext context,
-    int index,
-    String title,
-    IconData icon,
-  ) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.white70),
-      title: Text(title, style: const TextStyle(color: Colors.white)),
-      selected: _calculateSelectedIndex(context) == index,
-      onTap: () {
-        _onItemTapped(index, context);
-        Navigator.pop(context);
-      },
-    );
+  void _onItemTapped(int index, BuildContext context, List<_NavItem> navItems) {
+    context.go(navItems[index].route);
   }
 
-  void _onItemTapped(int index, BuildContext context) {
-    switch (index) {
-      case 0:
-        context.go('/admin/dashboard');
-        break;
-      case 1:
-        context.go('/admin/users');
-        break;
-      case 2:
-        context.go('/admin/services');
-        break;
-      case 3:
-        context.go('/admin/financials');
-        break;
-      case 4:
-        context.go('/admin/support');
-        break;
-      case 5:
-        context.go('/admin/settings');
-        break;
-    }
-  }
-
-  int _calculateSelectedIndex(BuildContext context) {
+  int _calculateSelectedIndex(BuildContext context, List<_NavItem> navItems) {
     final String location = GoRouterState.of(context).uri.path;
-    if (location.startsWith('/admin/dashboard')) return 0;
-    if (location.startsWith('/admin/users')) return 1;
-    if (location.startsWith('/admin/services')) return 2;
-    if (location.startsWith('/admin/financials')) return 3;
-    if (location.startsWith('/admin/support')) return 4;
-    if (location.startsWith('/admin/settings')) return 5;
+    for (int i = 0; i < navItems.length; i++) {
+      if (location.startsWith(navItems[i].route)) return i;
+    }
     return 0;
   }
+
+  List<_NavItem> _getNavItems(AdminRole role) {
+    final allItems = [
+      _NavItem(
+        label: 'Overview',
+        icon: Icons.analytics_outlined,
+        selectedIcon: Icons.analytics,
+        route: '/admin/dashboard',
+        roles: [
+          AdminRole.superAdmin,
+          AdminRole.opsAdmin,
+          AdminRole.financeAdmin,
+          AdminRole.supportAdmin,
+        ],
+      ),
+      _NavItem(
+        label: 'Users',
+        icon: Icons.people_outline,
+        selectedIcon: Icons.people,
+        route: '/admin/users',
+        roles: [AdminRole.superAdmin, AdminRole.opsAdmin],
+      ),
+      _NavItem(
+        label: 'Services',
+        icon: Icons.verified_outlined,
+        selectedIcon: Icons.verified,
+        route: '/admin/services',
+        roles: [
+          AdminRole.superAdmin,
+          AdminRole.supportAdmin,
+          AdminRole.opsAdmin,
+        ],
+      ),
+      _NavItem(
+        label: 'Financials',
+        icon: Icons.attach_money,
+        selectedIcon: Icons.attach_money,
+        route: '/admin/financials',
+        roles: [AdminRole.superAdmin, AdminRole.financeAdmin],
+      ),
+      _NavItem(
+        label: 'Support',
+        icon: Icons.support_agent,
+        selectedIcon: Icons.support_agent,
+        route: '/admin/support',
+        roles: [
+          AdminRole.superAdmin,
+          AdminRole.supportAdmin,
+          AdminRole.opsAdmin,
+        ],
+      ),
+      _NavItem(
+        label: 'Settings',
+        icon: Icons.settings_outlined,
+        selectedIcon: Icons.settings,
+        route: '/admin/settings',
+        roles: [AdminRole.superAdmin],
+      ),
+    ];
+
+    return allItems.where((item) => item.roles.contains(role)).toList();
+  }
+}
+
+class _NavItem {
+  final String label;
+  final IconData icon;
+  final IconData selectedIcon;
+  final String route;
+  final List<AdminRole> roles;
+
+  _NavItem({
+    required this.label,
+    required this.icon,
+    required this.selectedIcon,
+    required this.route,
+    required this.roles,
+  });
 }

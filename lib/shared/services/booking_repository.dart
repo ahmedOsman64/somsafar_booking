@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/booking_model.dart';
+import '../models/user_model.dart';
 import '../mock_data/mock_data.dart';
+import 'auth_service.dart';
 
 class BookingRepository extends StateNotifier<List<Booking>> {
   BookingRepository() : super(MockData().bookings);
@@ -12,6 +14,7 @@ class BookingRepository extends StateNotifier<List<Booking>> {
           Booking(
             id: b.id,
             serviceId: b.serviceId,
+            providerId: b.providerId,
             serviceTitle: b.serviceTitle,
             travelerId: b.travelerId,
             travelerName: b.travelerName,
@@ -45,3 +48,23 @@ final bookingProvider = StateNotifierProvider<BookingRepository, List<Booking>>(
     return BookingRepository();
   },
 );
+
+// Selector for role-based data isolation
+final filteredBookingsProvider = Provider<List<Booking>>((ref) {
+  final user = ref.watch(authProvider);
+  final bookings = ref.watch(bookingProvider);
+
+  if (user == null) return [];
+
+  switch (user.role) {
+    case UserRole.traveler:
+      // Traveler can only see their own bookings
+      return bookings.where((b) => b.travelerId == user.id).toList();
+    case UserRole.provider:
+      // Provider can only see bookings for their services
+      return bookings.where((b) => b.providerId == user.providerId).toList();
+    case UserRole.admin:
+      // Admins (Super, Ops, Finance) can see all bookings for management
+      return bookings;
+  }
+});

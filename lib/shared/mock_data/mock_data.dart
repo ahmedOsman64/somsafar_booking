@@ -24,6 +24,7 @@ class MockData {
     password: 'password123',
     role: UserRole.provider,
     providerType: ProviderType.home,
+    providerId: 'p1',
     profileImage: 'https://i.pravatar.cc/150?u=u2',
   );
 
@@ -33,7 +34,18 @@ class MockData {
     email: 'farah@somsafar.so',
     password: 'adminpassword',
     role: UserRole.admin,
+    adminRole: AdminRole.superAdmin,
     profileImage: 'https://i.pravatar.cc/150?u=u3',
+  );
+
+  final User financeAdmin = const User(
+    id: 'u8',
+    name: 'Mohamed Finance',
+    email: 'finance@somsafar.so',
+    password: 'financepassword',
+    role: UserRole.admin,
+    adminRole: AdminRole.financeAdmin,
+    profileImage: 'https://i.pravatar.cc/150?u=u8',
   );
 
   final User travelerAhmed = const User(
@@ -52,6 +64,7 @@ class MockData {
     password: 'password123',
     role: UserRole.provider,
     providerType: ProviderType.hotel,
+    providerId: 'p2',
     profileImage: 'https://i.pravatar.cc/150?u=u5',
   );
 
@@ -71,6 +84,7 @@ class MockData {
     password: 'password123',
     role: UserRole.provider,
     providerType: ProviderType.transport,
+    providerId: 'p3',
     profileImage: 'https://i.pravatar.cc/150?u=u7',
   );
 
@@ -78,6 +92,7 @@ class MockData {
   final List<Service> services = [
     Service(
       id: 's1',
+      providerId: 'p1', // Sarah Host
       title: 'Luxury Villa with Sea View',
       category: 'Home',
       price: 150.0,
@@ -89,6 +104,7 @@ class MockData {
     ),
     Service(
       id: 's2',
+      providerId: 'p2', // Asha Omar
       title: 'City Center Apartment',
       category: 'Apartment',
       price: 80.0,
@@ -100,6 +116,7 @@ class MockData {
     ),
     Service(
       id: 's3',
+      providerId: 'p3', // Liban Abdi
       title: 'Safari Tour Package',
       category: 'Tour',
       price: 200.0,
@@ -115,6 +132,7 @@ class MockData {
     Booking(
       id: 'b1',
       serviceId: 's1',
+      providerId: 'p1',
       serviceTitle: 'Luxury Villa with Sea View',
       travelerId: 'u1',
       travelerName: 'John Traveler',
@@ -132,6 +150,7 @@ class MockData {
     Booking(
       id: 'b2',
       serviceId: 's2',
+      providerId: 'p2',
       serviceTitle: 'City Center Apartment',
       travelerId: 'u4',
       travelerName: 'Alice Guest',
@@ -149,6 +168,7 @@ class MockData {
     Booking(
       id: 'b3',
       serviceId: 's1',
+      providerId: 'p1',
       serviceTitle: 'Luxury Villa with Sea View',
       travelerId: 'u5',
       travelerName: 'Bob Tourist',

@@ -11,7 +11,7 @@ class ServiceDetailsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final services = ref.watch(serviceProvider);
+    final services = ref.watch(filteredServicesProvider);
     final service = services.firstWhere(
       (s) => s.id == serviceId,
       orElse: () => throw Exception('Service not found'),

@@ -15,8 +15,8 @@ class ProviderDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider);
-    final services = ref.watch(serviceProvider);
-    final bookings = ref.watch(bookingProvider);
+    final services = ref.watch(filteredServicesProvider);
+    final bookings = ref.watch(filteredBookingsProvider);
     final width = MediaQuery.of(context).size.width;
 
     if (user == null) {

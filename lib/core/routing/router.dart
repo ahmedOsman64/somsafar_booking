@@ -74,16 +74,41 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       final path = state.uri.path;
 
-      // Strict Role Guards
-      if (authState.role == UserRole.traveler &&
-          (path.startsWith('/provider') || path.startsWith('/admin'))) {
-        return '/access-denied';
+      // Strict Role Guards & Hierarchy
+      if (authState.role == UserRole.traveler) {
+        if (path.startsWith('/provider') || path.startsWith('/admin')) {
+          return '/access-denied';
+        }
+      } else if (authState.role == UserRole.provider) {
+        if (path.startsWith('/traveler') || path.startsWith('/admin')) {
+          return '/access-denied';
+        }
+      } else if (authState.role == UserRole.admin) {
+        // Admin sub-role granular access
+        final adminRole = authState.adminRole;
+        if (adminRole == null) return '/access-denied';
+
+        if (adminRole == AdminRole.opsAdmin) {
+          if (path.startsWith('/admin/financials') ||
+              path.startsWith('/admin/settings')) {
+            return '/access-denied';
+          }
+        } else if (adminRole == AdminRole.financeAdmin) {
+          if (path.startsWith('/admin/users') ||
+              path.startsWith('/admin/services') ||
+              path.startsWith('/admin/support') ||
+              path.startsWith('/admin/settings')) {
+            return '/access-denied';
+          }
+        } else if (adminRole == AdminRole.supportAdmin) {
+          if (path.startsWith('/admin/users') ||
+              path.startsWith('/admin/financials') ||
+              path.startsWith('/admin/settings')) {
+            return '/access-denied';
+          }
+        }
+        // Super Admin has full access
       }
-      if (authState.role == UserRole.provider &&
-          (path.startsWith('/traveler') || path.startsWith('/admin'))) {
-        return '/access-denied';
-      }
-      // Admin can see everything, but usually stays in /admin
 
       return null;
     },

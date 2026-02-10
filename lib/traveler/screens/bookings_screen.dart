@@ -10,8 +10,7 @@ class TravelerBookingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // In real app, filter by ref.read(authProvider).id
-    final bookings = ref.watch(bookingProvider);
+    final bookings = ref.watch(filteredBookingsProvider);
     if (bookings.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: const Text('My Bookings')),

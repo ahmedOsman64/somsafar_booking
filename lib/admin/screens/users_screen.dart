@@ -4,7 +4,6 @@ import '../../shared/models/user_model.dart';
 import '../../core/theme/app_colors.dart';
 import 'package:go_router/go_router.dart';
 import '../../shared/services/user_repository.dart';
-import '../../shared/services/auth_service.dart';
 
 class AdminUsersScreen extends ConsumerStatefulWidget {
   const AdminUsersScreen({super.key});
@@ -17,26 +16,18 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
   String _filter = 'all'; // all, traveler, provider, admin
 
   List<User> get _filteredUsers {
-    final users = ref.watch(userProvider);
-    final currentUser = ref.watch(authProvider);
-    // Only admin can see all users. Travelers and providers see only themselves.
-    if (currentUser == null) return [];
-    if (currentUser.role == UserRole.admin) {
-      if (_filter == 'all') return users;
-      if (_filter == 'traveler') {
-        return users.where((u) => u.role == UserRole.traveler).toList();
-      }
-      if (_filter == 'provider') {
-        return users.where((u) => u.role == UserRole.provider).toList();
-      }
-      if (_filter == 'admin') {
-        return users.where((u) => u.role == UserRole.admin).toList();
-      }
-      return users;
-    } else {
-      // Traveler or provider: only see their own info
-      return users.where((u) => u.id == currentUser.id).toList();
+    final users = ref.watch(filteredUsersProvider);
+    if (_filter == 'all') return users;
+    if (_filter == 'traveler') {
+      return users.where((u) => u.role == UserRole.traveler).toList();
     }
+    if (_filter == 'provider') {
+      return users.where((u) => u.role == UserRole.provider).toList();
+    }
+    if (_filter == 'admin') {
+      return users.where((u) => u.role == UserRole.admin).toList();
+    }
+    return users;
   }
 
   @override

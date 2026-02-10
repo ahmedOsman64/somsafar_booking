@@ -1,6 +1,6 @@
 enum UserRole { traveler, provider, admin }
 
-enum AdminRole { superAdmin, opsAdmin, supportAdmin }
+enum AdminRole { superAdmin, opsAdmin, financeAdmin, supportAdmin }
 
 enum UserStatus { active, blocked, suspended }
 
@@ -13,6 +13,7 @@ class User {
   final UserRole role;
   final AdminRole? adminRole; // Only for admin users
   final ProviderType? providerType; // Only for provider users
+  final String? providerId; // Scoping ID for providers
   final UserStatus status;
   final String? profileImage;
   final String password; // Mock password field
@@ -25,6 +26,7 @@ class User {
     required this.password,
     this.adminRole,
     this.providerType,
+    this.providerId,
     this.status = UserStatus.active,
     this.profileImage,
   });
@@ -35,6 +37,7 @@ class User {
     UserRole? role,
     AdminRole? adminRole,
     ProviderType? providerType,
+    String? providerId,
     UserStatus? status,
     String? profileImage,
     String? password,
@@ -46,6 +49,7 @@ class User {
       role: role ?? this.role,
       adminRole: adminRole ?? this.adminRole,
       providerType: providerType ?? this.providerType,
+      providerId: providerId ?? this.providerId,
       status: status ?? this.status,
       profileImage: profileImage ?? this.profileImage,
       password: password ?? this.password,

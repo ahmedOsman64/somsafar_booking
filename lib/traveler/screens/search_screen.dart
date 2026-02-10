@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/services/service_repository.dart';
-import '../../shared/models/service_model.dart';
 import 'package:go_router/go_router.dart';
 
 class TravelerSearchScreen extends ConsumerStatefulWidget {
@@ -26,10 +25,7 @@ class _TravelerSearchScreenState extends ConsumerState<TravelerSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final services = ref.watch(serviceProvider);
-    final activeServices = services
-        .where((s) => s.status == ServiceStatus.active)
-        .toList();
+    final activeServices = ref.watch(filteredServicesProvider);
 
     // Filter logic
     final filteredServices = activeServices.where((s) {

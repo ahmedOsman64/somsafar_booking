@@ -4,6 +4,7 @@ enum ServiceStatus { active, inactive, draft, pendingApproval, blocked }
 
 class Service {
   final String id;
+  final String providerId; // Owner of the service
   String title;
   String category;
   double price;
@@ -15,6 +16,7 @@ class Service {
 
   Service({
     required this.id,
+    required this.providerId,
     required this.title,
     required this.category,
     required this.price,
@@ -48,6 +50,7 @@ class Service {
 
   Service copyWith({
     String? id,
+    String? providerId,
     String? title,
     String? category,
     double? price,
@@ -59,6 +62,7 @@ class Service {
   }) {
     return Service(
       id: id ?? this.id,
+      providerId: providerId ?? this.providerId,
       title: title ?? this.title,
       category: category ?? this.category,
       price: price ?? this.price,

@@ -267,6 +267,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       final booking = Booking(
         id: const Uuid().v4(),
         serviceId: widget.serviceId,
+        providerId: service.providerId,
         serviceTitle: service.title,
         travelerId: user?.id ?? 'guest',
         travelerName: widget.contactName,

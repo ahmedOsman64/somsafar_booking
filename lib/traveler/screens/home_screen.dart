@@ -12,7 +12,7 @@ class TravelerHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider);
-    final services = ref.watch(serviceProvider);
+    final services = ref.watch(filteredServicesProvider);
     final displayName = (user != null && user.name.trim().isNotEmpty)
         ? user.name
         : 'Traveler';

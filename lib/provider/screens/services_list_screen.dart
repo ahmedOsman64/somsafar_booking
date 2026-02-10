@@ -29,7 +29,7 @@ class _ProviderServicesScreenState
 
   @override
   Widget build(BuildContext context) {
-    final services = ref.watch(serviceProvider);
+    final services = ref.watch(filteredServicesProvider);
     final user = ref.watch(authProvider);
     final providerType = user?.providerType ?? ProviderType.hotel;
 

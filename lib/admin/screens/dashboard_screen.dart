@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../admin_strings.dart';
 import '../../shared/services/service_repository.dart';
 import '../../shared/services/booking_repository.dart';
 import '../../shared/services/user_repository.dart';
+import '../../shared/services/auth_service.dart';
 import '../../shared/models/user_model.dart';
 import '../../shared/models/service_model.dart';
 import '../../shared/models/booking_model.dart';
@@ -17,6 +19,8 @@ class AdminDashboardScreen extends ConsumerWidget {
     final services = ref.watch(serviceProvider);
     final bookings = ref.watch(bookingProvider);
     final users = ref.watch(userProvider);
+    final currentUser = ref.watch(authProvider);
+    final adminRole = currentUser?.adminRole ?? AdminRole.supportAdmin;
 
     // Admin KPIs
     final totalUsers = users.length;
@@ -40,7 +44,7 @@ class AdminDashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AdminStrings.titleDashboard),
+        title: Text('${adminRole.name.toUpperCase()} Dashboard'),
         automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
@@ -60,23 +64,11 @@ class AdminDashboardScreen extends ConsumerWidget {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 16),
-            // Responsive grid for KPI cards. Use a taller childAspectRatio
-            // on narrow layouts to avoid bottom overflow when the card's
-            // internal content needs more vertical space.
             Builder(
               builder: (context) {
                 final width = MediaQuery.of(context).size.width;
-                final crossAxisCount = width > 1200
-                    ? 6
-                    : width > 800
-                    ? 3
-                    : 2;
-                // Decrease aspect ratio (more height) to prevent overflow.
-                final childAspectRatio = width > 1200
-                    ? 0.85
-                    : width > 800
-                    ? 0.8
-                    : 0.95;
+                final crossAxisCount = width > 1200 ? 6 : (width > 800 ? 3 : 2);
+                final childAspectRatio = width > 800 ? 1.0 : 1.2;
 
                 return GridView.count(
                   crossAxisCount: crossAxisCount,
@@ -86,42 +78,55 @@ class AdminDashboardScreen extends ConsumerWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
-                    _AdminKpiCard(
-                      title: AdminStrings.totalUsers,
-                      value: totalUsers.toString(),
-                      icon: Icons.people,
-                      color: Colors.blue,
-                    ),
-                    _AdminKpiCard(
-                      title: AdminStrings.providers,
-                      value: totalProviders.toString(),
-                      icon: Icons.store,
-                      color: Colors.teal,
-                    ),
-                    _AdminKpiCard(
-                      title: AdminStrings.activeServices,
-                      value: totalServices.toString(),
-                      icon: Icons.hotel,
-                      color: Colors.orange,
-                    ),
-                    _AdminKpiCard(
-                      title: AdminStrings.pendingApprovals,
-                      value: pendingServices.toString(),
-                      icon: Icons.verified,
-                      color: pendingServices > 0 ? Colors.red : Colors.green,
-                    ),
-                    _AdminKpiCard(
-                      title: AdminStrings.totalBookings,
-                      value: totalBookings.toString(),
-                      icon: Icons.book_online,
-                      color: Colors.purple,
-                    ),
-                    _AdminKpiCard(
-                      title: AdminStrings.revenue,
-                      value: '\$${totalRevenue.toStringAsFixed(0)}',
-                      icon: Icons.attach_money,
-                      color: Colors.green,
-                    ),
+                    if (adminRole == AdminRole.superAdmin ||
+                        adminRole == AdminRole.opsAdmin)
+                      _AdminKpiCard(
+                        title: AdminStrings.totalUsers,
+                        value: totalUsers.toString(),
+                        icon: Icons.people,
+                        color: Colors.blue,
+                      ),
+                    if (adminRole == AdminRole.superAdmin ||
+                        adminRole == AdminRole.opsAdmin)
+                      _AdminKpiCard(
+                        title: AdminStrings.providers,
+                        value: totalProviders.toString(),
+                        icon: Icons.store,
+                        color: Colors.teal,
+                      ),
+                    if (adminRole == AdminRole.superAdmin ||
+                        adminRole == AdminRole.supportAdmin ||
+                        adminRole == AdminRole.opsAdmin)
+                      _AdminKpiCard(
+                        title: AdminStrings.activeServices,
+                        value: totalServices.toString(),
+                        icon: Icons.hotel,
+                        color: Colors.orange,
+                      ),
+                    if (adminRole == AdminRole.superAdmin ||
+                        adminRole == AdminRole.supportAdmin)
+                      _AdminKpiCard(
+                        title: AdminStrings.pendingApprovals,
+                        value: pendingServices.toString(),
+                        icon: Icons.verified,
+                        color: pendingServices > 0 ? Colors.red : Colors.green,
+                      ),
+                    if (adminRole == AdminRole.superAdmin ||
+                        adminRole == AdminRole.opsAdmin)
+                      _AdminKpiCard(
+                        title: AdminStrings.totalBookings,
+                        value: totalBookings.toString(),
+                        icon: Icons.book_online,
+                        color: Colors.purple,
+                      ),
+                    if (adminRole == AdminRole.superAdmin ||
+                        adminRole == AdminRole.financeAdmin)
+                      _AdminKpiCard(
+                        title: AdminStrings.revenue,
+                        value: '\$${totalRevenue.toStringAsFixed(0)}',
+                        icon: Icons.attach_money,
+                        color: Colors.green,
+                      ),
                   ],
                 );
               },
@@ -141,57 +146,63 @@ class AdminDashboardScreen extends ConsumerWidget {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 16),
-                      Card(
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.blue,
-                            child: const Icon(
-                              Icons.person,
-                              color: Colors.white,
+                      if (adminRole != AdminRole.financeAdmin) ...[
+                        const Card(
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.blue,
+                              child: Icon(Icons.person, color: Colors.white),
+                            ),
+                            title: Text(
+                              'New Provider Registered: Hassan Ahmed',
+                            ),
+                            subtitle: Text('Registered 5 mins ago'),
+                          ),
+                        ),
+                        Card(
+                          child: ListTile(
+                            leading: const CircleAvatar(
+                              backgroundColor: AppColors.primary,
+                              child: Icon(
+                                Icons.add_business,
+                                color: Colors.white,
+                              ),
+                            ),
+                            title: const Text(
+                              'New Service Listing: Seaview Hotel',
+                            ),
+                            subtitle: const Text('Submitted for approval'),
+                            trailing:
+                                (adminRole == AdminRole.superAdmin ||
+                                    adminRole == AdminRole.supportAdmin)
+                                ? ElevatedButton(
+                                    onPressed: () =>
+                                        context.go('/admin/services'),
+                                    child: const Text(AdminStrings.review),
+                                  )
+                                : null,
+                          ),
+                        ),
+                      ],
+                      if (adminRole == AdminRole.superAdmin ||
+                          adminRole == AdminRole.financeAdmin)
+                        const Card(
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.green,
+                              child: Icon(Icons.payments, color: Colors.white),
+                            ),
+                            title: Text('Payment Received: \$1,200'),
+                            subtitle: Text('Transaction ID: #TX-9821'),
+                            trailing: Text(
+                              '+ \$120 Fee',
+                              style: TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          title: Text(
-                            '${AdminStrings.newProviderTitle} Hassan Ahmed',
-                          ),
-                          subtitle: const Text('Registered 5 mins ago'),
-                          trailing: Chip(
-                            label: const Text(AdminStrings.pendingVerify),
-                            backgroundColor: Colors.orangeAccent,
-                          ),
                         ),
-                      ),
-                      Card(
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: AppColors.primary,
-                            child: const Icon(
-                              Icons.add_business,
-                              color: Colors.white,
-                            ),
-                          ),
-                          title: Text(
-                            '${AdminStrings.newServiceTitle} Seaview Hotel',
-                          ),
-                          subtitle: const Text('Submitted for approval'),
-                          trailing: ElevatedButton(
-                            onPressed: () {},
-                            child: const Text(AdminStrings.review),
-                          ),
-                        ),
-                      ),
-                      const Card(
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.red,
-                            child: Icon(Icons.warning, color: Colors.white),
-                          ),
-                          title: Text('High Cancellation Rate'),
-                          subtitle: Text(
-                            'Provider #1234 has 5 cancellations today',
-                          ),
-                          trailing: Icon(Icons.arrow_forward),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -238,10 +249,11 @@ class AdminDashboardScreen extends ConsumerWidget {
                                 style: TextStyle(fontSize: 12),
                               ),
                               const SizedBox(height: 8),
-                              OutlinedButton(
-                                onPressed: () {},
-                                child: const Text(AdminStrings.viewLogs),
-                              ),
+                              if (adminRole == AdminRole.superAdmin)
+                                OutlinedButton(
+                                  onPressed: () {},
+                                  child: const Text(AdminStrings.viewLogs),
+                                ),
                             ],
                           ),
                         ),

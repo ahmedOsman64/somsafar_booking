@@ -5,6 +5,7 @@ enum BookingStatus { pending, confirmed, completed, cancelled }
 class Booking {
   final String id;
   final String serviceId;
+  final String providerId; // Owner of the service being booked
   final String serviceTitle;
   final String travelerId;
   final String travelerName;
@@ -23,6 +24,7 @@ class Booking {
   Booking({
     required this.id,
     required this.serviceId,
+    required this.providerId,
     required this.serviceTitle,
     required this.travelerId,
     required this.travelerName,

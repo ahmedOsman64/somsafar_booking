@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../mock_data/mock_data.dart';
+import 'auth_service.dart';
 
 class UserRepository extends StateNotifier<List<User>> {
   UserRepository()
@@ -36,4 +37,25 @@ class UserRepository extends StateNotifier<List<User>> {
 
 final userProvider = StateNotifierProvider<UserRepository, List<User>>((ref) {
   return UserRepository();
+});
+
+// Selector for role-based data isolation
+final filteredUsersProvider = Provider<List<User>>((ref) {
+  final user = ref.watch(authProvider);
+  final users = ref.watch(userProvider);
+
+  if (user == null) return [];
+
+  switch (user.role) {
+    case UserRole.traveler:
+      // Travelers can only see their own profile
+      return users.where((u) => u.id == user.id).toList();
+    case UserRole.provider:
+      // Providers generally shouldn't see all users, but maybe travelers who booked?
+      // For now, keep it strict: only themselves
+      return users.where((u) => u.id == user.id).toList();
+    case UserRole.admin:
+      // Admins see everyone
+      return users;
+  }
 });
