@@ -55,4 +55,14 @@ class User {
       password: password ?? this.password,
     );
   }
+
+  bool get isSuperAdmin => adminRole == AdminRole.superAdmin;
+  bool get isOpsAdmin => adminRole == AdminRole.opsAdmin;
+  bool get isFinanceAdmin => adminRole == AdminRole.financeAdmin;
+  bool get isSupportAdmin => adminRole == AdminRole.supportAdmin;
+
+  bool get canManageAdmins => isSuperAdmin;
+  bool get canManageFinance => isSuperAdmin || isFinanceAdmin;
+  bool get canManageOps => isSuperAdmin || isOpsAdmin;
+  bool get canManageSupport => isSuperAdmin || isSupportAdmin;
 }

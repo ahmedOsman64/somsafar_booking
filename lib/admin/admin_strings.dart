@@ -28,4 +28,7 @@ class AdminStrings {
 
   static const String databaseLatency = 'Database Latency';
   static const String viewLogs = 'View Logs';
+
+  static const String supportCenter = 'Support Center';
+  static const String systemSettings = 'System Settings';
 }

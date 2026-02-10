@@ -49,6 +49,26 @@ class MockData {
     profileImage: 'https://i.pravatar.cc/150?u=u8',
   );
 
+  final User opsAdmin = const User(
+    id: 'u9',
+    name: 'Omar Ops',
+    email: 'ops@somsafar.so',
+    password: 'opspassword',
+    role: UserRole.admin,
+    adminRole: AdminRole.opsAdmin,
+    profileImage: 'https://i.pravatar.cc/150?u=u9',
+  );
+
+  final User supportAdmin = const User(
+    id: 'u10',
+    name: 'Sahra Support',
+    email: 'support@somsafar.so',
+    password: 'supportpassword',
+    role: UserRole.admin,
+    adminRole: AdminRole.supportAdmin,
+    profileImage: 'https://i.pravatar.cc/150?u=u10',
+  );
+
   final User travelerAhmed = const User(
     id: 'u4',
     name: 'Ahmed Mohamed',

@@ -30,6 +30,7 @@ import '../../admin/screens/financials_screen.dart';
 import '../../admin/screens/support_screen.dart';
 import '../../admin/screens/settings_screen.dart';
 import '../../admin/screens/create_user_screen.dart';
+import '../../admin/screens/admin_profile_screen.dart';
 
 import '../../provider/screens/provider_service_form_screen.dart';
 
@@ -279,6 +280,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/admin/settings',
             builder: (context, state) => const AdminSettingsScreen(),
+          ),
+          GoRoute(
+            path: '/admin/profile',
+            builder: (context, state) => const AdminProfileScreen(),
           ),
         ],
       ),

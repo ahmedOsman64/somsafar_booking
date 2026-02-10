@@ -32,6 +32,44 @@ class AdminShell extends ConsumerWidget {
                 color: AppColors.accent,
                 fontWeight: FontWeight.bold,
               ),
+              leading: Padding(
+                padding: const EdgeInsets.only(top: 24, bottom: 24),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.admin_panel_settings,
+                      color: AppColors.accent,
+                      size: 40,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      adminRole.name.toUpperCase().replaceAll('ADMIN', ''),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withAlpha(50),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.accent),
+                      ),
+                      child: const Text(
+                        'ADMIN',
+                        style: TextStyle(fontSize: 10, color: AppColors.accent),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               destinations: navItems
                   .map(
                     (item) => NavigationRailDestination(
@@ -41,21 +79,108 @@ class AdminShell extends ConsumerWidget {
                     ),
                   )
                   .toList(),
-              trailing: Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: IconButton(
-                  icon: const Icon(Icons.logout, color: Colors.white70),
-                  onPressed: () {
-                    ref.read(authProvider.notifier).logout();
-                    context.go('/login');
-                  },
+              trailing: Expanded(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: IconButton(
+                      icon: const Icon(Icons.logout, color: Colors.white70),
+                      onPressed: () {
+                        ref.read(authProvider.notifier).logout();
+                        context.go('/login');
+                      },
+                    ),
+                  ),
                 ),
               ),
               selectedIndex: _calculateSelectedIndex(context, navItems),
               onDestinationSelected: (index) =>
                   _onItemTapped(index, context, navItems),
             ),
-            Expanded(child: child),
+            Expanded(
+              child: Column(
+                children: [
+                  // Desktop Top Bar
+                  Container(
+                    height: 64,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(13),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          _getPageTitle(context),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () {},
+                          icon: const Icon(Icons.notifications_outlined),
+                        ),
+                        const SizedBox(width: 16),
+                        InkWell(
+                          onTap: () => context.go('/admin/profile'),
+                          borderRadius: BorderRadius.circular(30),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 18,
+                                  backgroundColor: AppColors.primary,
+                                  backgroundImage: user?.profileImage != null
+                                      ? NetworkImage(user!.profileImage!)
+                                      : null,
+                                  child: user?.profileImage == null
+                                      ? const Icon(
+                                          Icons.person,
+                                          size: 20,
+                                          color: Colors.white,
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: 12),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      user?.name ?? 'Admin',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Text(
+                                      adminRole.name,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(child: child),
+                ],
+              ),
+            ),
           ],
         ),
       );
@@ -79,10 +204,13 @@ class AdminShell extends ConsumerWidget {
             tooltip: 'Logout',
           ),
           const SizedBox(width: 8),
-          const CircleAvatar(
-            radius: 16,
-            backgroundColor: AppColors.primary,
-            child: Icon(Icons.person, size: 20, color: Colors.white),
+          InkWell(
+            onTap: () => context.go('/admin/profile'),
+            child: const CircleAvatar(
+              radius: 16,
+              backgroundColor: AppColors.primary,
+              child: Icon(Icons.person, size: 20, color: Colors.white),
+            ),
           ),
           const SizedBox(width: 16),
         ],
@@ -242,4 +370,15 @@ class _NavItem {
     required this.route,
     required this.roles,
   });
+}
+
+String _getPageTitle(BuildContext context) {
+  final location = GoRouterState.of(context).uri.path;
+  if (location.contains('dashboard')) return 'Dashboard';
+  if (location.contains('users')) return 'User Management';
+  if (location.contains('services')) return 'Service Listings';
+  if (location.contains('financials')) return 'Financial Reports';
+  if (location.contains('support')) return 'Support Center';
+  if (location.contains('settings')) return 'System Settings';
+  return 'Admin Portal';
 }
