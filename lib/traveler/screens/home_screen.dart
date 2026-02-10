@@ -6,29 +6,67 @@ import '../../shared/services/auth_service.dart';
 import '../../shared/services/service_repository.dart';
 import '../../shared/models/service_model.dart';
 
-class TravelerHomeScreen extends ConsumerWidget {
+class TravelerHomeScreen extends ConsumerStatefulWidget {
   const TravelerHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TravelerHomeScreen> createState() => _TravelerHomeScreenState();
+}
+
+class _TravelerHomeScreenState extends ConsumerState<TravelerHomeScreen> {
+  String _selectedCategory = 'All';
+
+  final List<Map<String, dynamic>> _categories = [
+    {'icon': Icons.grid_view, 'label': 'All'},
+    {'icon': Icons.hotel, 'label': 'Hotels'},
+    {'icon': Icons.home, 'label': 'Homes'},
+    {'icon': Icons.directions_car, 'label': 'Transport'},
+    {'icon': Icons.apartment, 'label': 'Apartments'},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(authProvider);
     final services = ref.watch(filteredServicesProvider);
     final displayName = (user != null && user.name.trim().isNotEmpty)
         ? user.name
         : 'Traveler';
-    // Dummy categories for now, or could come from a provider
-    final categories = [
-      {'icon': Icons.hotel, 'label': 'Hotels'},
-      {'icon': Icons.home, 'label': 'Homes'},
-      {'icon': Icons.directions_car, 'label': 'Transport'},
-      {'icon': Icons.apartment, 'label': 'Apartments'},
-      {'icon': Icons.flight, 'label': 'Flights'},
-    ];
 
-    // Filter active services for "Featured"
-    final featuredServices = services
-        .where((s) => s.status == ServiceStatus.active)
-        .toList();
+    // Filter active services based on selection AND status
+    final featuredServices = services.where((s) {
+      if (s.status != ServiceStatus.active) return false;
+      if (_selectedCategory == 'All') return true;
+
+      // Mapping UI category to Data category
+      // UI: 'Hotels' -> Data: 'Hotel'
+      // UI: 'Homes' -> Data: 'Home'
+      // UI: 'Transport' -> Data: 'Transport'
+      // UI: 'Apartments' -> Data: 'Apartment'
+
+      // Simple singularization for matching (strip 's' if present, handle special cases if needed)
+      // Actually, let's look at the labels.
+      // 'Hotels' -> startsWith('Hotel') might be safer if data is 'Hotel'.
+
+      String dataCategory = s.category; // e.g., 'Home', 'Apartment', 'Tour'
+
+      switch (_selectedCategory) {
+        case 'Hotels':
+          return dataCategory == 'Hotel';
+        case 'Homes':
+          return dataCategory == 'Home';
+        case 'Transport':
+          // Assuming 'Transport' or 'Tour' might be related, but let's stick to exact match or specific logic.
+          // In mock data we have 'Tour'. User asked for 'Transport'.
+          // Let's assume 'Transport' in UI maps to 'Transport' in data if it exists.
+          // If the mock data has 'Tour', maybe we should include 'Tour' under 'Transport' or just strictly match.
+          // Given the prompt: "Selecting “Transport” → show only transport".
+          return dataCategory == 'Transport';
+        case 'Apartments':
+          return dataCategory == 'Apartment';
+        default:
+          return false;
+      }
+    }).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA), // Light background
@@ -64,30 +102,35 @@ class TravelerHomeScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Welcome back,',
-                                style: TextStyle(
-                                  color: Colors.white.withAlpha(200),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Welcome back,',
+                                  style: TextStyle(
+                                    color: Colors.white.withAlpha(200),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w400,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                displayName,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
+                                const SizedBox(height: 8),
+                                Text(
+                                  displayName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           // Optional Profile Avatar
                           Container(
+                            margin: const EdgeInsets.only(left: 16),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
@@ -190,6 +233,12 @@ class TravelerHomeScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Removed "Categories" title for cleaner look?
+                  // The prompt said "UI CLEANUP & SIMPLICITY ... Remove unused or inactive UI elements".
+                  // But let's keep the title if not explicitly asked to remove, but maybe make it cleaner.
+                  // The prompt says "Remove unused or inactive UI elements". The title is useful context.
+                  // However, for Simplicity, often the list speaks for itself.
+                  // Prompt validation: "Categories are simple, selectable, and user-friendly".
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: Text(
@@ -206,15 +255,25 @@ class TravelerHomeScreen extends ConsumerWidget {
                     child: ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       scrollDirection: Axis.horizontal,
-                      itemCount: categories.length,
+                      itemCount: _categories.length,
                       separatorBuilder: (context, index) =>
                           const SizedBox(width: 16),
                       itemBuilder: (context, index) {
-                        final cat = categories[index];
-                        return _CategoryItem(
-                          icon: cat['icon'] as IconData,
-                          label: cat['label'] as String,
-                          isSelected: index == 0, // Mock selection
+                        final cat = _categories[index];
+                        final label = cat['label'] as String;
+                        final isSelected = label == _selectedCategory;
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedCategory = label;
+                            });
+                          },
+                          child: _CategoryItem(
+                            icon: cat['icon'] as IconData,
+                            label: label,
+                            isSelected: isSelected,
+                          ),
                         );
                       },
                     ),
@@ -237,7 +296,7 @@ class TravelerHomeScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Featured Services',
+                          'Featured Services', // Maybe change this to match category? E.g., "Top Hotels"
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(
                                 fontWeight: FontWeight.bold,
@@ -252,21 +311,39 @@ class TravelerHomeScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    height: 280, // Height for the horizontal cards
-                    child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      scrollDirection: Axis.horizontal,
-                      itemCount: featuredServices.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(width: 16),
-                      itemBuilder: (context, index) {
-                        return _FeaturedServiceCard(
-                          service: featuredServices[index],
-                        );
-                      },
+                  if (featuredServices.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'No $_selectedCategory found.',
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      height: 280, // Height for the horizontal cards
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: featuredServices.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(width: 16),
+                        itemBuilder: (context, index) {
+                          return _FeaturedServiceCard(
+                            service: featuredServices[index],
+                          );
+                        },
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

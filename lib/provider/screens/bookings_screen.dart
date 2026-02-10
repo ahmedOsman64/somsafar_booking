@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/services/booking_repository.dart';
 import '../../shared/models/booking_model.dart';
-import '../../traveler/screens/chat_screen.dart';
+import 'provider_chat_screen.dart';
 import '../../shared/services/auth_service.dart';
 import '../../shared/models/user_model.dart';
 
@@ -267,9 +267,9 @@ class _BookingCard extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ChatScreen(
+                  builder: (context) => ProviderChatScreen(
                     bookingId: booking.id,
-                    chatTitle: booking.travelerName,
+                    travelerName: booking.travelerName,
                   ),
                 ),
               );

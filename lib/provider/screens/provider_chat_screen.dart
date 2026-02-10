@@ -4,29 +4,29 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/services/auth_service.dart';
 import '../../shared/services/chat_repository.dart';
-import '../../shared/services/booking_repository.dart';
 import '../../shared/models/chat_message_model.dart';
 
-/// Traveler chat screen - Shows chat history with provider
-/// Displays traveler's messages and provider replies
-/// Modernized UI with date grouping, avatars, and bubbles
-class ChatScreen extends ConsumerStatefulWidget {
+/// Provider chat screen - Shows FULL chat history
+/// Displays traveler messages and provider replies
+/// Provider replies are visible to travelers; Internal Notes are private
+class ProviderChatScreen extends ConsumerStatefulWidget {
   final String bookingId;
-  final String chatTitle; // Provider name
+  final String travelerName;
 
-  const ChatScreen({
+  const ProviderChatScreen({
     required this.bookingId,
-    required this.chatTitle,
+    required this.travelerName,
     super.key,
   });
 
   @override
-  ConsumerState<ChatScreen> createState() => _ChatScreenState();
+  ConsumerState<ProviderChatScreen> createState() => _ProviderChatScreenState();
 }
 
-class _ChatScreenState extends ConsumerState<ChatScreen> {
+class _ProviderChatScreenState extends ConsumerState<ProviderChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  bool _isInternalNote = false;
 
   @override
   void dispose() {
@@ -47,9 +47,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           bookingId: widget.bookingId,
           messageText: _controller.text.trim(),
           currentUser: user,
+          isInternalNote: _isInternalNote,
         );
 
     _controller.clear();
+    setState(() {
+      _isInternalNote = false;
+    });
 
     // Scroll to bottom after sending
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -65,15 +69,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Get filtered messages (only traveler's sent messages)
+    // Get all messages for this booking (provider sees everything)
     final messages = ref.watch(filteredChatMessagesProvider(widget.bookingId));
-
-    // Get booking details for display
-    final bookings = ref.watch(bookingProvider);
-    final booking = bookings.firstWhere(
-      (b) => b.id == widget.bookingId,
-      orElse: () => throw Exception('Booking not found'),
-    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -86,11 +83,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           children: [
             CircleAvatar(
               radius: 18,
-              backgroundColor: AppColors.primary.withAlpha(26),
+              backgroundColor: AppColors.secondary.withAlpha(26),
               child: Text(
-                widget.chatTitle.substring(0, 1).toUpperCase(),
+                widget.travelerName.substring(0, 1).toUpperCase(),
                 style: const TextStyle(
-                  color: AppColors.primary,
+                  color: AppColors.secondary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -100,7 +97,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.chatTitle,
+                  widget.travelerName,
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.black,
@@ -108,7 +105,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                 ),
                 Text(
-                  booking.serviceTitle,
+                  'Booking: ${widget.bookingId.substring(0, 8)}...',
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
@@ -117,12 +114,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.phone, color: Colors.grey[600]),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+            icon: Icon(Icons.info_outline, color: Colors.grey[600]),
+            onPressed: () {
+              _showVisibilityInfo(context);
+            },
           ),
         ],
       ),
@@ -148,15 +143,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.chat_bubble_outline,
                             size: 48,
-                            color: AppColors.primary,
+                            color: Colors.grey[400],
                           ),
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Say hello to ${widget.chatTitle}!',
+                          'No messages yet',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -165,7 +160,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Ask about your booking details.',
+                          'Waiting for ${widget.travelerName} to send a message',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[500],
@@ -201,6 +196,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
           ),
 
+          // Internal note toggle (Modernized)
+          if (_isInternalNote)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: Colors.orange[50],
+              child: Row(
+                children: [
+                  Icon(Icons.lock, size: 16, color: Colors.orange[700]),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Internal Note Mode (Hidden from Traveler)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.orange[900],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => _isInternalNote = false),
+                    child: const Text('Cancel'),
+                  ),
+                ],
+              ),
+            ),
+
           // Input area
           Container(
             padding: const EdgeInsets.all(16),
@@ -217,15 +240,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             child: SafeArea(
               child: Row(
                 children: [
+                  // Internal Note Toggle Button
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: _isInternalNote
+                          ? Colors.orange[100]
+                          : Colors.grey[100],
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.add),
-                      color: Colors.grey[600],
+                      onPressed: () =>
+                          setState(() => _isInternalNote = !_isInternalNote),
+                      icon: Icon(
+                        _isInternalNote ? Icons.lock : Icons.lock_open_outlined,
+                      ),
+                      color: _isInternalNote
+                          ? Colors.orange[700]
+                          : Colors.grey[600],
+                      tooltip: 'Toggle Internal Note',
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -233,15 +265,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: _isInternalNote
+                            ? Colors.orange[50]
+                            : Colors.grey[100],
                         borderRadius: BorderRadius.circular(24),
+                        border: _isInternalNote
+                            ? Border.all(color: Colors.orange[200]!)
+                            : null,
                       ),
                       child: TextField(
                         controller: _controller,
-                        decoration: const InputDecoration(
-                          hintText: 'Type a message...',
+                        decoration: InputDecoration(
+                          hintText: _isInternalNote
+                              ? 'Type internal note...'
+                              : 'Type a reply...',
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
                           isDense: true,
                         ),
                         onSubmitted: (_) => _sendMessage(),
@@ -255,8 +296,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     onTap: _sendMessage,
                     child: Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
+                      decoration: BoxDecoration(
+                        color: _isInternalNote
+                            ? Colors.orange
+                            : AppColors.primary,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -307,21 +350,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget _buildMessageBubble(ChatMessage message) {
     final timeFormat = DateFormat('h:mm a');
     final isFromTraveler = message.isFromTraveler;
+    final isInternalNote = message.isInternalNote;
+
+    // Alignment: Traveler (Left), Provider (Right)
+    final isMyMessage = !isFromTraveler;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
-        mainAxisAlignment: isFromTraveler
+        mainAxisAlignment: isMyMessage
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (!isFromTraveler) ...[
+          if (!isMyMessage) ...[
             CircleAvatar(
               radius: 14,
               backgroundColor: Colors.grey[300],
               child: Text(
-                widget.chatTitle.substring(0, 1).toUpperCase(),
+                widget.travelerName.substring(0, 1).toUpperCase(),
                 style: TextStyle(
                   fontSize: 10,
                   color: Colors.grey[700],
@@ -334,11 +381,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Flexible(
             child: Container(
               constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.7,
+                maxWidth: MediaQuery.of(context).size.width * 0.75,
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isFromTraveler ? AppColors.primary : Colors.white,
+                color: isInternalNote
+                    ? Colors.orange[100]
+                    : isMyMessage
+                    ? AppColors.primary
+                    : Colors.white,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withAlpha(13),
@@ -349,13 +400,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(20),
                   topRight: const Radius.circular(20),
-                  bottomLeft: isFromTraveler
+                  bottomLeft: isMyMessage
                       ? const Radius.circular(20)
                       : const Radius.circular(4),
-                  bottomRight: isFromTraveler
+                  bottomRight: isMyMessage
                       ? const Radius.circular(4)
                       : const Radius.circular(20),
+                  // Special styling for internal notes
                 ),
+                border: isInternalNote
+                    ? Border.all(color: Colors.orange[300]!)
+                    : null,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -363,7 +418,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   Text(
                     message.messageText,
                     style: TextStyle(
-                      color: isFromTraveler ? Colors.white : Colors.black87,
+                      color: isInternalNote
+                          ? Colors.orange[900]
+                          : isMyMessage
+                          ? Colors.white
+                          : Colors.black87,
                       fontSize: 15,
                     ),
                   ),
@@ -371,21 +430,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      if (isInternalNote) ...[
+                        Icon(Icons.lock, size: 10, color: Colors.orange[800]),
+                        const SizedBox(width: 4),
+                      ],
                       Text(
                         timeFormat.format(message.timestamp),
                         style: TextStyle(
                           fontSize: 10,
-                          color: isFromTraveler
+                          color: isInternalNote
+                              ? Colors.orange[800]
+                              : isMyMessage
                               ? Colors.white.withAlpha(179)
                               : Colors.grey[500],
                         ),
                       ),
-                      if (isFromTraveler) ...[
+                      if (isMyMessage) ...[
                         const SizedBox(width: 4),
                         Icon(
                           Icons.done_all,
                           size: 12,
-                          color: Colors.white.withAlpha(179),
+                          color: isInternalNote
+                              ? Colors.orange[800]
+                              : Colors.white.withAlpha(179),
                         ),
                       ],
                     ],
@@ -396,6 +463,74 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showVisibilityInfo(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Chat Visibility Rules'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildInfoItem(
+              Icons.check_circle,
+              Colors.blue,
+              'Traveler Messages',
+              'You can see all messages sent by the traveler.',
+            ),
+            const SizedBox(height: 12),
+            _buildInfoItem(
+              Icons.visibility_off,
+              Colors.amber,
+              'Your Replies',
+              'Your regular replies are visible to the traveler.',
+            ),
+            const SizedBox(height: 12),
+            _buildInfoItem(
+              Icons.lock,
+              Colors.orange,
+              'Internal Notes',
+              'Internal notes are PRIVATE. The traveler cannot see them.',
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoItem(
+    IconData icon,
+    Color color,
+    String title,
+    String description,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: color),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(fontWeight: FontWeight.bold, color: color),
+              ),
+              Text(description, style: const TextStyle(fontSize: 12)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

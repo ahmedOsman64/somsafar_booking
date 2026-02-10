@@ -505,7 +505,7 @@ class _ProviderServiceFormScreenState
         AppTextField(
           controller: _titleController,
           label: 'Service Title *',
-          hint: 'e.g., Luxury Beach Villa',
+          hint: 'enter title for your service',
           validator: (val) =>
               val == null || val.isEmpty ? 'Title is required' : null,
           prefixIcon: const Icon(Icons.title),
@@ -608,7 +608,7 @@ class _ProviderServiceFormScreenState
               child: AppTextField(
                 controller: _checkInController,
                 label: 'Check-in Time *',
-                hint: 'e.g. 02:00 PM',
+                hint: 'enter time in HH:MM AM/PM format',
                 prefixIcon: const Icon(Icons.login),
               ),
             ),
@@ -617,7 +617,7 @@ class _ProviderServiceFormScreenState
               child: AppTextField(
                 controller: _checkOutController,
                 label: 'Check-out Time *',
-                hint: 'e.g. 11:00 AM',
+                hint: 'enter time out in HH:MM AM/PM format',
                 prefixIcon: const Icon(Icons.logout),
               ),
             ),

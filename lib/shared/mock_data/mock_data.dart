@@ -1,6 +1,7 @@
 import '../models/user_model.dart';
 import '../models/service_model.dart';
 import '../models/booking_model.dart';
+import '../models/chat_message_model.dart';
 
 class MockData {
   static final MockData _instance = MockData._internal();
@@ -182,6 +183,70 @@ class MockData {
       contactEmail: 'bob@example.com',
       status: BookingStatus.confirmed,
       paymentStatus: BookingPaymentStatus.paid,
+    ),
+  ];
+
+  // Chat Messages
+  final List<ChatMessage> chatMessages = [
+    // Booking b1: John Traveler (u1) -> Sarah Host (p1)
+    ChatMessage.fromTraveler(
+      id: 'msg1',
+      bookingId: 'b1',
+      travelerId: 'u1',
+      messageText: 'Hi! I have a question about the check-in time.',
+      timestamp: DateTime.now().subtract(const Duration(hours: 3)),
+    ),
+    ChatMessage.fromProvider(
+      id: 'msg2',
+      bookingId: 'b1',
+      providerId: 'p1',
+      messageText: 'Hello! Check-in is at 2 PM. Welcome!',
+      timestamp: DateTime.now().subtract(const Duration(hours: 2, minutes: 45)),
+    ),
+    ChatMessage.fromTraveler(
+      id: 'msg3',
+      bookingId: 'b1',
+      travelerId: 'u1',
+      messageText: 'Is parking available at the villa?',
+      timestamp: DateTime.now().subtract(const Duration(hours: 1)),
+    ),
+    ChatMessage.fromProvider(
+      id: 'msg4',
+      bookingId: 'b1',
+      providerId: 'p1',
+      messageText: 'Yes, free parking is available.',
+      timestamp: DateTime.now().subtract(const Duration(minutes: 30)),
+    ),
+    ChatMessage.fromProvider(
+      id: 'msg5',
+      bookingId: 'b1',
+      providerId: 'p1',
+      messageText: 'Internal note: Guest arriving from airport, arrange pickup',
+      timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
+      isInternalNote: true,
+    ),
+
+    // Booking b3: Bob Tourist (u5) -> Sarah Host (p1)
+    ChatMessage.fromTraveler(
+      id: 'msg6',
+      bookingId: 'b3',
+      travelerId: 'u5',
+      messageText: 'Can we do early check-in?',
+      timestamp: DateTime.now().subtract(const Duration(days: 2)),
+    ),
+    ChatMessage.fromProvider(
+      id: 'msg7',
+      bookingId: 'b3',
+      providerId: 'p1',
+      messageText: 'Early check-in available for \$25 extra.',
+      timestamp: DateTime.now().subtract(const Duration(days: 2, hours: 22)),
+    ),
+    ChatMessage.fromTraveler(
+      id: 'msg8',
+      bookingId: 'b3',
+      travelerId: 'u5',
+      messageText: 'That works! Please arrange it.',
+      timestamp: DateTime.now().subtract(const Duration(days: 2, hours: 20)),
     ),
   ];
 }
