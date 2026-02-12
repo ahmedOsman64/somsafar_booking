@@ -85,7 +85,9 @@ class _ProviderChatScreenState extends ConsumerState<ProviderChatScreen> {
               radius: 18,
               backgroundColor: AppColors.secondary.withAlpha(26),
               child: Text(
-                widget.travelerName.substring(0, 1).toUpperCase(),
+                widget.travelerName.isNotEmpty
+                    ? widget.travelerName.substring(0, 1).toUpperCase()
+                    : '?',
                 style: const TextStyle(
                   color: AppColors.secondary,
                   fontWeight: FontWeight.bold,
@@ -105,7 +107,7 @@ class _ProviderChatScreenState extends ConsumerState<ProviderChatScreen> {
                   ),
                 ),
                 Text(
-                  'Booking: ${widget.bookingId.substring(0, 8)}...',
+                  'Booking: ${(widget.bookingId.length >= 8 ? widget.bookingId.substring(0, 8) : widget.bookingId)}...',
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
@@ -368,7 +370,9 @@ class _ProviderChatScreenState extends ConsumerState<ProviderChatScreen> {
               radius: 14,
               backgroundColor: Colors.grey[300],
               child: Text(
-                widget.travelerName.substring(0, 1).toUpperCase(),
+                widget.travelerName.isNotEmpty
+                    ? widget.travelerName.substring(0, 1).toUpperCase()
+                    : '?',
                 style: TextStyle(
                   fontSize: 10,
                   color: Colors.grey[700],

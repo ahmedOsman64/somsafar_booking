@@ -88,7 +88,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               radius: 18,
               backgroundColor: AppColors.primary.withAlpha(26),
               child: Text(
-                widget.chatTitle.substring(0, 1).toUpperCase(),
+                widget.chatTitle.isNotEmpty
+                    ? widget.chatTitle.substring(0, 1).toUpperCase()
+                    : '?',
                 style: const TextStyle(
                   color: AppColors.primary,
                   fontWeight: FontWeight.bold,
@@ -321,7 +323,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               radius: 14,
               backgroundColor: Colors.grey[300],
               child: Text(
-                widget.chatTitle.substring(0, 1).toUpperCase(),
+                widget.chatTitle.isNotEmpty
+                    ? widget.chatTitle.substring(0, 1).toUpperCase()
+                    : '?',
                 style: TextStyle(
                   fontSize: 10,
                   color: Colors.grey[700],

@@ -279,7 +279,9 @@ class AdminFinancialsScreen extends ConsumerWidget {
                   leading: CircleAvatar(
                     backgroundColor: Colors.grey[100],
                     child: Text(
-                      tx.userName.substring(0, 1),
+                      tx.userName.isNotEmpty
+                          ? tx.userName.substring(0, 1)
+                          : '?',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,

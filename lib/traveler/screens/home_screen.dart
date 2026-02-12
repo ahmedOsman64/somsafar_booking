@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../shared/services/auth_service.dart';
 import '../../shared/services/service_repository.dart';
 import '../../shared/models/service_model.dart';
+import '../../shared/widgets/banner_carousel.dart';
 
 class TravelerHomeScreen extends ConsumerStatefulWidget {
   const TravelerHomeScreen({super.key});
@@ -75,7 +76,7 @@ class _TravelerHomeScreenState extends ConsumerState<TravelerHomeScreen> {
           // 1. Header Section with Gradient
           SliverAppBar(
             pinned: true,
-            expandedHeight: 180.0,
+            expandedHeight: 120.0,
             backgroundColor: AppColors.primary,
             elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
@@ -98,7 +99,7 @@ class _TravelerHomeScreenState extends ConsumerState<TravelerHomeScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 48), // Top padding for status bar
+                      const SizedBox(height: 24), // Reduced top padding
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -110,25 +111,25 @@ class _TravelerHomeScreenState extends ConsumerState<TravelerHomeScreen> {
                                   'Welcome back,',
                                   style: TextStyle(
                                     color: Colors.white.withAlpha(200),
-                                    fontSize: 18,
+                                    fontSize: 16, // Slightly smaller
                                     fontWeight: FontWeight.w400,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 4),
                                 Text(
                                   displayName,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 26,
+                                    fontSize: 22, // Slightly smaller
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          // Optional Profile Avatar
+                          // Profile Avatar
                           Container(
                             margin: const EdgeInsets.only(left: 16),
                             decoration: BoxDecoration(
@@ -139,7 +140,7 @@ class _TravelerHomeScreenState extends ConsumerState<TravelerHomeScreen> {
                               ),
                             ),
                             child: CircleAvatar(
-                              radius: 24,
+                              radius: 20, // Smaller radius
                               backgroundColor: Colors.white.withAlpha(30),
                               backgroundImage: user?.profileImage != null
                                   ? NetworkImage(user!.profileImage!)
@@ -148,6 +149,7 @@ class _TravelerHomeScreenState extends ConsumerState<TravelerHomeScreen> {
                                   ? const Icon(
                                       Icons.person,
                                       color: Colors.white,
+                                      size: 20,
                                     )
                                   : null,
                             ),
@@ -159,72 +161,10 @@ class _TravelerHomeScreenState extends ConsumerState<TravelerHomeScreen> {
                 ),
               ),
             ),
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(80),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
-                ),
-                color: Colors
-                    .transparent, // Let gradient show through or use white overlap?
-                // Design usually has search bar half-overlapping or inside header.
-                // Let's put it inside the bottom slot cleanly.
-                child: GestureDetector(
-                  onTap: () => context.go('/traveler/search'),
-                  child: Container(
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(20),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.search,
-                            color: AppColors.primary,
-                            size: 28,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Where do you want to go?',
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withAlpha(20),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.tune,
-                              color: AppColors.primary,
-                              size: 20,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
           ),
+
+          // 1.5. Dynamic Banner Carousel
+          const SliverToBoxAdapter(child: BannerCarousel()),
 
           // 2. Categories Section
           SliverToBoxAdapter(

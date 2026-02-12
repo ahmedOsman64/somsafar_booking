@@ -350,6 +350,13 @@ class AdminShell extends ConsumerWidget {
         route: '/admin/settings',
         roles: [AdminRole.superAdmin],
       ),
+      _NavItem(
+        label: 'Banners',
+        icon: Icons.image_outlined,
+        selectedIcon: Icons.image,
+        route: '/admin/banners',
+        roles: [AdminRole.superAdmin, AdminRole.opsAdmin],
+      ),
     ];
 
     return allItems.where((item) => item.roles.contains(role)).toList();
@@ -380,5 +387,6 @@ String _getPageTitle(BuildContext context) {
   if (location.contains('financials')) return 'Financial Reports';
   if (location.contains('support')) return 'Support Center';
   if (location.contains('settings')) return 'System Settings';
+  if (location.contains('banners')) return 'Banner Management';
   return 'Admin Portal';
 }

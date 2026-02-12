@@ -10,6 +10,7 @@ import '../../shared/services/auth_service.dart';
 import '../../shared/models/user_model.dart';
 import '../../shared/models/service_model.dart';
 import '../../shared/models/booking_model.dart';
+import '../../shared/services/banner_repository.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -41,6 +42,8 @@ class AdminDashboardScreen extends ConsumerWidget {
           );
           return sum + service.price;
         });
+
+    final totalBanners = ref.watch(bannerProvider).length;
 
     return Scaffold(
       appBar: AppBar(
@@ -126,6 +129,14 @@ class AdminDashboardScreen extends ConsumerWidget {
                         value: '\$${totalRevenue.toStringAsFixed(0)}',
                         icon: Icons.attach_money,
                         color: Colors.green,
+                      ),
+                    if (adminRole == AdminRole.superAdmin ||
+                        adminRole == AdminRole.opsAdmin)
+                      _AdminKpiCard(
+                        title: 'Dynamic Banners',
+                        value: totalBanners.toString(),
+                        icon: Icons.image,
+                        color: Colors.indigo,
                       ),
                   ],
                 );

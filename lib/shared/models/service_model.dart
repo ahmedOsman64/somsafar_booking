@@ -45,7 +45,9 @@ class Service {
   String get statusLabel {
     // Camel case specific handling
     if (status == ServiceStatus.pendingApproval) return 'Pending';
-    return status.name[0].toUpperCase() + status.name.substring(1);
+    return status.name.isNotEmpty
+        ? status.name[0].toUpperCase() + status.name.substring(1)
+        : 'Unknown';
   }
 
   Service copyWith({

@@ -59,8 +59,8 @@ class _AdminCreateProviderScreenState
 
   void _generatePassword() {
     // simple mock generator
-    _passwordController.text =
-        "Prov${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}!";
+    final ts = DateTime.now().millisecondsSinceEpoch.toString();
+    _passwordController.text = "Prov${ts.length > 8 ? ts.substring(8) : ts}!";
     _confirmPasswordController.text = _passwordController.text;
   }
 

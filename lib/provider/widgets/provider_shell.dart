@@ -101,7 +101,9 @@ class ProviderShell extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '${servicesLabel.substring(0, servicesLabel.length - 1)} Console',
+          servicesLabel.isNotEmpty
+              ? '${servicesLabel.substring(0, servicesLabel.length - 1)} Console'
+              : 'Console',
         ),
         backgroundColor: AppColors.primary,
         actions: [

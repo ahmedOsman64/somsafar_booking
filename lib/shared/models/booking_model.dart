@@ -54,8 +54,9 @@ class Booking {
     }
   }
 
-  String get statusLabel =>
-      status.name[0].toUpperCase() + status.name.substring(1);
+  String get statusLabel => status.name.isNotEmpty
+      ? status.name[0].toUpperCase() + status.name.substring(1)
+      : 'Unknown';
 }
 
 enum BookingPaymentStatus { pending, paid, failed }

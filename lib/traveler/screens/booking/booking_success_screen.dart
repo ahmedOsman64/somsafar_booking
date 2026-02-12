@@ -47,7 +47,10 @@ class BookingSuccessScreen extends StatelessWidget {
                   children: [
                     const Text('Booking ID: '),
                     SelectableText(
-                      bookingId.substring(0, 8).toUpperCase(),
+                      (bookingId.length >= 8
+                              ? bookingId.substring(0, 8)
+                              : bookingId)
+                          .toUpperCase(),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
