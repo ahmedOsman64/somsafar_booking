@@ -56,15 +56,21 @@ final filteredBookingsProvider = Provider<List<Booking>>((ref) {
 
   if (user == null) return [];
 
-  switch (user.role) {
-    case UserRole.traveler:
-      // Traveler can only see their own bookings
-      return bookings.where((b) => b.travelerId == user.id).toList();
-    case UserRole.provider:
-      // Provider can only see bookings for their services
-      return bookings.where((b) => b.providerId == user.providerId).toList();
-    case UserRole.admin:
-      // Admins (Super, Ops, Finance) can see all bookings for management
-      return bookings;
+  if (user.role == UserRole.admin) {
+    // Admins (Super, Ops, Finance) can see all bookings for management
+    return bookings;
   }
+
+  // Common logic for both Travelers and Providers:
+  // Return bookings where the user is EITHER the traveler OR the provider.
+  // This allows a "Traveler" to theoretically be a provider (if role allowed),
+  // and critically allows a "Provider" to see their own personal trips as a traveler.
+
+  final providerKey = user.providerId ?? user.id;
+
+  return bookings.where((b) {
+    final isMyTrip = b.travelerId == user.id;
+    final isMyServiceBooking = b.providerId == providerKey;
+    return isMyTrip || isMyServiceBooking;
+  }).toList();
 });

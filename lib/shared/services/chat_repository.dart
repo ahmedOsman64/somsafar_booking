@@ -83,50 +83,56 @@ final chatProvider = StateNotifierProvider<ChatRepository, List<ChatMessage>>((
 
 /// Filtered chat messages provider based on user role and booking
 /// This is the SECURITY ENFORCEMENT LAYER
-final filteredChatMessagesProvider = Provider.family<List<ChatMessage>, String>(
-  (ref, bookingId) {
-    final user = ref.watch(authProvider);
-    final allMessages = ref.watch(chatProvider);
-    final bookings = ref.watch(bookingProvider);
+final filteredChatMessagesProvider = Provider.family<List<ChatMessage>, String>((
+  ref,
+  bookingId,
+) {
+  final user = ref.watch(authProvider);
+  final allMessages = ref.watch(chatProvider);
+  final bookings = ref.watch(bookingProvider);
 
-    if (user == null) return [];
+  if (user == null) return [];
 
-    // Get all messages for this booking
-    final bookingMessages =
-        allMessages.where((msg) => msg.bookingId == bookingId).toList()
-          ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+  // Get all messages for this booking
+  final bookingMessages =
+      allMessages.where((msg) => msg.bookingId == bookingId).toList()
+        ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
-    // Find the booking to verify access
-    final booking = bookings.firstWhere(
-      (b) => b.id == bookingId,
-      orElse: () => throw Exception('Booking not found'),
-    );
+  // Find the booking to verify access
+  final booking = bookings.firstWhere(
+    (b) => b.id == bookingId,
+    orElse: () => throw Exception('Booking not found'),
+  );
 
-    // Role-based filtering
-    switch (user.role) {
-      case UserRole.traveler:
-        // Travelers can see all messages that are flagged visible to traveler
-        // and the booking must belong to them
-        if (booking.travelerId != user.id) {
-          throw Exception('403 Forbidden: Access denied to this chat');
-        }
-        return bookingMessages
-            .where((msg) => msg.visibleToTraveler == true)
-            .toList();
+  // Access Control Logic:
+  // Check if the user is the traveler OR the provider for this specific booking.
+  // This allows a "Provider" user to still act as a "Traveler" on other bookings.
 
-      case UserRole.provider:
-        // Providers can see all messages for their own bookings
-        if (booking.providerId != user.providerId) {
-          throw Exception('403 Forbidden: Access denied to this chat');
-        }
-        return bookingMessages;
+  final isTravelerOfBooking = booking.travelerId == user.id;
+  final isProviderOfBooking =
+      booking.providerId == (user.providerId ?? user.id);
+  final isAdmin = user.role == UserRole.admin;
 
-      case UserRole.admin:
-        // Admins can see all messages (oversight capability)
-        return bookingMessages;
-    }
-  },
-);
+  if (isAdmin) {
+    return bookingMessages;
+  }
+
+  if (isProviderOfBooking) {
+    // Provider view: sees everything
+    return bookingMessages;
+  }
+
+  if (isTravelerOfBooking) {
+    // Traveler view: sees only messages visible to traveler
+    // (Provider replies + their own messages)
+    return bookingMessages
+        .where((msg) => msg.visibleToTraveler == true)
+        .toList();
+  }
+
+  // If neither, access denied
+  throw Exception('403 Forbidden: Access denied to this chat');
+});
 
 /// Helper provider to check if user has chat access to a booking
 final hasChatAccessProvider = Provider.family<bool, String>((ref, bookingId) {
@@ -135,17 +141,20 @@ final hasChatAccessProvider = Provider.family<bool, String>((ref, bookingId) {
 
   if (user == null) return false;
 
-  final booking = bookings.firstWhere(
-    (b) => b.id == bookingId,
-    orElse: () => throw Exception('Booking not found'),
-  );
+  try {
+    final booking = bookings.firstWhere(
+      (b) => b.id == bookingId,
+      orElse: () => throw Exception('Booking not found'),
+    );
 
-  switch (user.role) {
-    case UserRole.traveler:
-      return booking.travelerId == user.id;
-    case UserRole.provider:
-      return booking.providerId == user.providerId;
-    case UserRole.admin:
-      return true;
+    if (user.role == UserRole.admin) return true;
+
+    final isTravelerOfBooking = booking.travelerId == user.id;
+    final isProviderOfBooking =
+        booking.providerId == (user.providerId ?? user.id);
+
+    return isTravelerOfBooking || isProviderOfBooking;
+  } catch (e) {
+    return false;
   }
 });

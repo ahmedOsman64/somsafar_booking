@@ -192,7 +192,7 @@ class MockData {
       providerId: 'p1',
       serviceTitle: 'Luxury Villa with Sea View',
       travelerId: 'u5',
-      travelerName: 'Bob Tourist',
+      travelerName: 'Asha Omar',
       date: DateTime.now().subtract(const Duration(days: 20)),
       checkIn: DateTime.now().add(const Duration(days: 10)),
       checkOut: DateTime.now().add(const Duration(days: 15)),

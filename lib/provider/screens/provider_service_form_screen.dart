@@ -43,7 +43,7 @@ class _ProviderServiceFormScreenState
   ];
 
   String? _selectedCategory;
-  ServiceStatus _status = ServiceStatus.draft;
+  ServiceStatus _status = ServiceStatus.active;
   List<String> _images = [];
 
   // Common Fields
@@ -250,7 +250,7 @@ class _ProviderServiceFormScreenState
     }
   }
 
-  void _saveService() {
+  Future<void> _saveService() async {
     if (_formKey.currentState!.validate()) {
       if (_images.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -316,7 +316,7 @@ class _ProviderServiceFormScreenState
           images: _images,
           metadata: metadata,
         );
-        ref.read(serviceProvider.notifier).updateService(updatedService);
+        await ref.read(serviceProvider.notifier).updateService(updatedService);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Service updated successfully!'),
@@ -326,9 +326,21 @@ class _ProviderServiceFormScreenState
       } else {
         // Create new
         final user = ref.read(authProvider);
+        if (user == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Error: User session invalid. Please login again.'),
+            ),
+          );
+          return;
+        }
+
+        // Use providerId if set, otherwise fall back to the user's id
+        final providerIdToUse = user.providerId ?? user.id;
+
         final newService = Service(
           id: '', // Repo generates ID
-          providerId: user?.providerId ?? 'unknown',
+          providerId: providerIdToUse,
           title: title,
           category: category,
           price: price,
@@ -338,7 +350,7 @@ class _ProviderServiceFormScreenState
           images: _images,
           metadata: metadata,
         );
-        ref.read(serviceProvider.notifier).addService(newService);
+        await ref.read(serviceProvider.notifier).addService(newService);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Service created successfully!'),

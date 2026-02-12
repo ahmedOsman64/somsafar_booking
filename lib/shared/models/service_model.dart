@@ -73,4 +73,37 @@ class Service {
       metadata: metadata ?? this.metadata,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'providerId': providerId,
+      'title': title,
+      'category': category,
+      'price': price,
+      'location': location,
+      'description': description,
+      'status': status.name,
+      'images': images,
+      'metadata': metadata,
+    };
+  }
+
+  factory Service.fromJson(Map<String, dynamic> json) {
+    return Service(
+      id: json['id'],
+      providerId: json['providerId'],
+      title: json['title'],
+      category: json['category'],
+      price: (json['price'] as num).toDouble(),
+      location: json['location'],
+      description: json['description'],
+      status: ServiceStatus.values.firstWhere(
+        (e) => e.name == json['status'],
+        orElse: () => ServiceStatus.draft,
+      ),
+      images: List<String>.from(json['images']),
+      metadata: Map<String, dynamic>.from(json['metadata'] ?? {}),
+    );
+  }
 }
